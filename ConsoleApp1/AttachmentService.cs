@@ -4,12 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Serialization;
+using System.Xml.Linq;
 
 namespace ConsoleApp1
 {
@@ -34,20 +31,21 @@ namespace ConsoleApp1
                         }
                         else if (fileNameExtension == ".zip")
                         {
-                            byte[] zipBytes = Convert.FromBase64String(getBase64String(attachment.ToString()));
-
-                            using (Stream zipStream = new MemoryStream(zipBytes))
+                            using (Stream zipStream = new MemoryStream(Convert.FromBase64String(getBase64String(attachment.ToString()))))
                             {
-                                ZipArchive zip = new ZipArchive(zipStream);
-                                foreach (ZipArchiveEntry entry in zip.Entries)
-                                    if (entry.Name.ToLower().Contains(".xml"))
-                                    {
-                                        var xmlStream = entry.Open();
-                                        XmlDocument res = new XmlDocument();
-                                        res.Load(xmlStream);
+                                using (ZipArchive zip = new ZipArchive(zipStream))
+                                {
+                                    foreach (ZipArchiveEntry entry in zip.Entries)
+                                        if (entry.Name.ToLower().Contains(".xml"))
+                                        {
+                                            var xmlStream = entry.Open();
+                                            XmlDocument res = new XmlDocument();
+                                            res.Load(xmlStream);
 
-                                        return res;
-                                    }
+                                            if (XmlHoaDon.CheckValidXmlHoaDon(res))
+                                                return res;
+                                        }
+                                }
                             }
                         }
                     }
